@@ -1,3 +1,5 @@
+// Многие создатели недокопий почему-то считают, что установка GimmeThatScreen на свою парашу спасёт их от читерастов, но к сожалению это не правда.
+
 // Во все визуальные хуки добавляешь if Isscreengrab then return end
 
 ------------Обнуляем защиту от перехвата render.Capture
@@ -209,4 +211,5 @@ function self:GetKeyListener()
 		end
 	)
 end
+
 self:Constructor()

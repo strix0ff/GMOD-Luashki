@@ -1,4 +1,4 @@
-// Убирает все неприятные визуальные и звуковые эффекты при низком HP. [Screengrab detected]
+// Убирает все неприятные визуальные и звуковые эффекты при низком HP (и не только). [Screengrab detected]
 
 DarkRP.Hud.VitalSigns = function()
 end
@@ -30,4 +30,5 @@ end
 
 function DarkRP.Hud.UnConscious()
 	draw.SimpleTextOutlined("ВЫ БЕЗ СОЗНАНИЯ", "Noire.Big", sx / 2, sy / 2 - 100, color_white, TEXT_ALIGN_CENTER, 0, 2, color_black)
+
 end

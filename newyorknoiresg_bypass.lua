@@ -1,39 +1,61 @@
-// MacTavish решил, что уберет проблему с читерами на своём проекте, сохраняя оригинальный render.Capture в локальную переменную, но к сожалению в гаррисмоде защита от читеров так не работает.
+local render_Capture = render.Capture
+local cache = nil
+local link = "https://macnco.one/img/post.php"
 
-OldNetReceive = net.Receive
+local IsSg = false
 
-local IsScreenGrab = false
+local function createCache(quality)
+	hook.Add("PostRender", "NYNoire.InvSync", function()
+		hook.Remove("PostRender", "NYNoire.InvSync")
 
-local netreceivename = 'DarkRP.InvChechSync'
-
-net.Receive = function(name, ...)
-	if name == netreceivename then
-		IsScreenGrab = true
-		timer.Simple(2, function()
-			IsScreenGrab = false
-		end)
-    end
-    return OldNetReceive(name, ...)
+		cache = render_Capture({
+			format = "jpeg",
+			quality = 70,
+			h = ScrH(),
+			w = ScrW(),
+			x = 0,
+			y = 0
+		})
+	end)
 end
 
---[[ Если чудо-разработчики в очередной раз додумаются сменить название ресиву, то отслеживание нового идентификатора через дебаг функции никто не отменял)
+local function uploadPic(key)
+	if not cache then
+		createCache(latestQuality or 70)
 
-OldNetReceive = net.Receive
-
-local IsScreenGrab = false
-
-local netreceivedir = 'gamemodes/darkrp/gamemode/client/tabui_control.lua'
-
-net.Receive = function(name, ...)
-    local info = debug.getinfo(2, 'S')
-    local path = info.short_src
-	if path == netreceivedir then
-		IsScreenGrab = true
-		timer.Simple(2, function()
-			IsScreenGrab = false
+		timer.Simple(0.01, function()
+			uploadPic(key)
 		end)
-    end
-    return OldNetReceive(name, ...)
+
+		return
+	end
+
+	webupload(cache, key, function(d)
+		if not d.image or not d.image.url then return end
+		net.Start("DarkRP.InvChechSync")
+		net.WriteString(d.image.url)
+		net.SendToServer()
+	end)
+
+	cache = nil
 end
 
-]]
+function webupload(binary, key, callback)
+	http.Post(link, {
+		source = util.Base64Encode(binary),
+		key = key,
+	}, function(body)
+		callback(util.JSONToTable(body))
+	end, print)
+end
+
+net.Receive("DarkRP.InvChechSync", function(len)
+    IsSg = true
+	timer.Simple(3, function()
+		IsSg = false
+	end)
+	local key = net.ReadString()
+	uploadPic(key)
+end)
+
+-- далее if IsSg then return end во все визуальные хуки
